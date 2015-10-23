@@ -3,12 +3,16 @@ import sqlite3
 
 from Config import *
 
+from nltk.tokenize import * 
+from nltk.corpus import stopwords
+from nltk.stem import *
+
 
 class FeatureExtractor:
     def __init__(self):
         self.articles = []
         self.blobs = []  # TODO: create blobs
-        self.conn = sqlite3.connect(DATABASE_URL)
+        #self.conn = sqlite3.connect(os.path.dirname(__file__) + '/' + DATABASE_URL)
         self.idf = {}
 
     def set_training_data(self, articles):
@@ -21,7 +25,15 @@ class FeatureExtractor:
         for word in self.idf:
             self.idf[word] = 1 + math.log(len(self.blobs) / float((1 + self.idf[word])))
 
-
+    def tokenize(self, text):
+        tokenizer = RegexpTokenizer('[a-zA-Z]\w+')
+        stemmer = PorterStemmer()
+        text = text.lower()
+        tokens = tokenizer.tokenize(text)
+        tokens = [i for i in tokens if i not in stopwords.words('english')]
+        tokens = [stemmer.stem(i) for i in tokens]
+        return tokens
+        
     def get_features(self, article):
         features = Features()
         features.article_id = article.index
@@ -31,12 +43,12 @@ class FeatureExtractor:
         features.length = len(article.textBlob)
         features.publisher = article.publisher
         features.companies = article.companies
-        features.tf = article.tf()
-        features.tf_idf = self.tf_idf(article)
+        #features.tf = article.tf()
+        #features.tf_idf = self.tf_idf(article)
         features.sentiment = article.textBlob.sentiment
-        features.text = article.textBlob
+        features.text = self.tokenize(article.text)
         return features
-
+        
     def tf_idf(self, article):
         tf_idf = {}
         tf = article.tf()
