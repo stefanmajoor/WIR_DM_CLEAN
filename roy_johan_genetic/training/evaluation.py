@@ -74,8 +74,8 @@ def calculateSentimentArticle(features, weights):
     return value
 
 def classify(features,weights):
-   posCutoff = 0.01
-   negCutoff = -0.01
+   posCutoff = 0.2
+   negCutoff = -0.2
    sentiment = calculateSentiment(features,weights)
    label = 'neu'
    if sentiment > posCutoff:
@@ -173,7 +173,7 @@ if __name__ == '__main__' :
     print '#articles=', len(train)
     
     
-    results = runTest(RandomMutator(), fitnessFunction, 100, wordId, -100, 250, 0.2, 0.5 , 0.05)
+    results = runTest(RandomMutator(), fitnessFunction, 250, wordId, -100, 100, 0.2, 0.5 , 0.05)
     sys.stdout = open('accuracy.txt', 'w')
     print 'accuracy: ', evaluate(results[len(results) - 1][2])
     print 'done'
