@@ -173,8 +173,9 @@ if __name__ == '__main__' :
     print '#articles=', len(train)
     
     
-    results = runTest(RandomMutator(), fitnessFunction, 100, wordId, -100, 100, 0.2, 0.5 , 0.05)
-    
+    results = runTest(RandomMutator(), fitnessFunction, 100, wordId, -100, 250, 0.2, 0.5 , 0.05)
+    sys.stdout = open('accuracy.txt', 'w')
+    print 'accuracy: ', evaluate(results[len(results) - 1][2])
     print 'done'
     weights = results[len(results) - 1][2]
     #Create DB of results (JSON)
