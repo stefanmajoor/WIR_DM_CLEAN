@@ -2,7 +2,7 @@ __author__ = 'Roy van den Hurk, Johan Munneke'
 
 import sqlite3
 
-from bs4 import BeautifulSoup
+from  bs4 import BeautifulSoup
 
 from textblob import TextBlob
 
@@ -10,9 +10,8 @@ from Config import *
 
 
 class Article:
-    def __init__(self, index, publisher, title, date, author, text, companies, label):
+    def __init__(self, index, publisher, title, date, author, text, companies):
         self.textBlob = TextBlob(self.clean_html(text))
-        self.text = self.clean_html(text)
         self.title = title
         self.author = author
         self.date = date
@@ -20,7 +19,6 @@ class Article:
         self.index = index
         self.companies = companies
         self.tf_cache = None
-        self.label = label
 
     def tf(self):
         if self.tf_cache:
@@ -35,11 +33,11 @@ class Article:
     def from_sql():
         conn = sqlite3.connect(DATABASE_URL)
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM article WHERE isEconomic=1 AND date!="None" LIMIT 100')
+        cursor.execute('SELECT * FROM article WHERE isEconomic=1 AND date!="None"')
         rows = cursor.fetchall()
         articles = []
         for row in rows:
-            article = Article(row[0], row[1], row[3], row[4], row[5], row[6], row[8],row[2])
+            article = Article(row[0], row[1], row[3], row[4], row[5], row[6], row[8])
             articles.append(article)
         conn.close()
         return articles

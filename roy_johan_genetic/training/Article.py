@@ -33,13 +33,15 @@ class Article:
 
     @staticmethod
     def from_sql():
+        print 'TODO don"t limit SQL'
         conn = sqlite3.connect(DATABASE_URL)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM article WHERE isEconomic=1 AND date!="None" LIMIT 100')
         rows = cursor.fetchall()
         articles = []
         for row in rows:
-            article = Article(row[0], row[1], row[3], row[4], row[5], row[6], row[8],row[2])
+            article = Article(row['id'], row['source'], row['title'], row['date'], row['author'], row['html'], row['companies'], row['label'])
             articles.append(article)
         conn.close()
         return articles
