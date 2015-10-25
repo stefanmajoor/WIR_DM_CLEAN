@@ -32,6 +32,7 @@ class Crawl:
         while True:
             ### Find all feeds
             for feed in self.mapper.getFeeds():
+		print "Crawling feed", feed
                 reader = RssReader.RssReader(feed)
                 reader.run()
                 articles = []
@@ -40,6 +41,7 @@ class Crawl:
                     parser = ContentParser.ContentParser(item)
                     articles.append(parser.run())
 
+		print "Extracted a total of", len(articles), "articles. Now filtering economical articles"
                 economicalArticles = self._extractEconomical(articles)
 
                 print "Extracted a total of ", len(economicalArticles), " economical articles"

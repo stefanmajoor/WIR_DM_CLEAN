@@ -1,5 +1,4 @@
 from stefan_mathilde.Crawler import Crawl
-from tom_kaitao import
 
 class Crawler(Crawl.Crawl):
     def handleArticle(self, article):
@@ -7,6 +6,6 @@ class Crawler(Crawl.Crawl):
 
 
 
-
+print "Starting crawler. It may take some time before articles are found"
 crawler = Crawler()
 crawler.crawl()
