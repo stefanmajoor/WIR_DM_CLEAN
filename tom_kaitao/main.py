@@ -157,4 +157,118 @@ artDB.commit()
 newArt.commit()
 print "done with part 1"
 
+'''
+Every article is its own object. In that object is a list of all words that apair in the article and a uniqe value based on these apair words.
+The value will only be the same for 2 article if and only if the article have the same words in them.
+If
+'''
 
+#Look how many articles are positief and how many are negatief
+artDBquery.execute('SELECT pos from customers')
+_ptot= 1
+for i in artDBquery:
+	_ptot += i[0]
+
+artDBquery.execute('SELECT neg from customers')
+_ntot= 1
+for i in artDBquery:
+	_ntot += i[0]
+
+artDBquery.execute('SELECT neu from customers')
+_nntot= 1
+for i in artDBquery:
+	_ntot += i[0]
+	
+#Validated every word. This is done be taking the difference in ratio pos articels with the word with the ratio neg. art. with the word
+wDBquery.execute('SELECT id, pos, neg, neu FROM customers')
+for i in wDBquery:
+	_pp = float(i[1])+1
+	_nn = float(i[2])+1
+	_nnn = float(i[3])+1
+	eP = _pp/_ptot * log(_ptot/_pp)
+	eN = _nn/_ntot * log(_ntot/_nn)
+	eNN = _nnn/_nntot * log(_nntot/_nnn)
+	x=abs(eP + eN + eNN)
+	state = ""
+	if eP > eN and eP > eNN:
+		state = "POS"
+	elif eN > eP and eN > eNN:
+		state = "NEG"
+	else:
+		state = "NEUT"
+	_l = (x,state,i[0])
+	wDBquery2.execute('UPDATE customers SET value = ?, isthisshitpos=? WHERE id = ?', _l)
+
+
+
+
+
+#We take the maximum ID and sort the words by smallest value first
+lenOfValWor = wDBquery.execute('SELECT id FROM customers ORDER BY id DESC LIMIT 1').fetchone()[0]
+for u in wDBquery:
+	print "first Value:", u
+wDBquery.execute('SELECT id, name FROM customers ORDER BY value DESC')
+isThisTheStart = True
+count = 0
+
+print "we will scan ", lenOfValWor, " words"
+count = 0
+for u in wDBquery:
+	count += 1
+	canIDeleteThis = True;
+	artDBquery.execute('SELECT realID, pos, neg, neu, id FROM customers')
+	for i in artDBquery:
+		_goingDown = int(i[0])%pow(3,u[0]+1)
+		if _goingDown >= pow(3,u[0]):
+			_val = (str(int(i[0])-int(pow(3,u[0]))),)
+			if _val[0] is '0':
+					canIDeleteThis = False
+					break
+			try:
+				_posN, _negN, _neuN = artDBquery2.execute('SELECT pos, neg, neu FROM customers WHERE realID = ?', _val).fetchone()
+				
+				if (min(_posN, _negN, _neuN) + min(i[1] , i[2], i[3])) is not (min(_posN+i[1], _negN+i[2], _neuN+i[3])):
+					canIDeleteThis = False
+					break
+			except:
+				pass
+	
+	if canIDeleteThis:
+		wDBquery2.execute('DELETE FROM customers WHERE id = ?', (u[0],))
+		artDBquery.execute('SELECT realID, pos, neg, neu FROM customers')
+		for i in artDBquery:
+			_goingDown = int(i[0])%pow(3,u[0]+1)
+			if _goingDown >= pow(3,u[0]):
+				_newVal = (str(int(i[0])-int(pow(3,u[0]))),)
+				try:
+					art1, pos1, neg1 =artDBquery2.execute('SELECT name, pos, neg FROM customers WHERE realID = ? ', (str(i[0]),)).fetchone()
+					oldID, art2, pos2, neg2 =artDBquery2.execute('SELECT id, name, pos, neg FROM customers WHERE realID = ? ', _newVal).fetchone()
+					_updatedvalue = (":unicornblood:".join([str(art1), str(art2)]),pos1+pos2,neg1+neg2,_newVal[0],i[0])
+					artDBquery2.execute('UPDATE customers SET name = ?, pos = ?, neg = ?, realID =? WHERE realID = ? ', _updatedvalue)
+					artDBquery2.execute('DELETE FROM customers WHERE id = ?', (oldID,))
+				except:
+					artDBquery2.execute('UPDATE customers SET realID =? WHERE realID = ? ', (_newVal[0], i[0]))
+	else:
+		print "KEEPING ", u
+		
+	if count % 100 is 0:
+		print "we have scanned: ", count, " words"
+		print "the time is: ", datetime.datetime.now()
+	'''
+	for i in range(0,pow(3,lenOfValWor-u-1)):
+		for t in range(i*pow(3,u),i*pow(3,u+1)-1):
+			cError= min(dictSort[t][0],dictSort[t][1])+min(dictSort[t+pow(3,u+1)][0],dictSort[t+pow(3,u+1)][1]);
+			nError = min(dictSort[t][0]+dictSort[t+pow(3,u+1)][0],dictSort[t][1]+dictSort[t+pow(3,u+1)][1]);
+			if cError is not nError:
+				canIDeleteThis = False;
+				break;
+		if not canIDeleteThis:
+			break;
+	#''
+	if canIDeleteThis:
+			for i in articles:
+				i.removeWord(u);
+	'''
+
+wordsDB.commit()
+artDB.commit()
