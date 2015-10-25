@@ -15,24 +15,21 @@ from featurextractor import *
 from nltk.stem.snowball import *
 
 def loadDataSet(limit):
-    conn = sqlite3.connect('articles.db')
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM article WHERE isEconomic=1 AND date!="None" LIMIT 10') #Tom: verander dit limit
-    rows = cursor.fetchall()
-    articles = []
-    for row in rows:
-        #Tom: Hier mis label laden
-        article = Article(row['id'], row['source'], row['title'], row['date'], row['author'], row['html'], row['companies'], 'pos' )
-        articles.append(article)
-    conn.close()
-    return articles
+	conn = sqlite3.connect('articles.db')
+	conn.row_factory = sqlite3.Row
+	cursor = conn.cursor()
+	cursor.execute('SELECT * FROM article WHERE isEconomic=1 AND date!="None"')
+	rows = cursor.fetchall()
+	articles = []
+	for row in rows:
+		article = Article(row['id'], row['source'], row['title'], row['date'], row['author'], row['html'], row['companies'], row['labal'] )
+		articles.append(article)
+	conn.close()
+	return articles
 
 def loadWords():
     words = []
-    words.extend(loadWordsFromDB('neg.db'))
-    words.extend(loadWordsFromDB('neu.db'))
-    words.extend(loadWordsFromDB('pos.db'))
+    words.extend(loadWordsFromDB('wordList.db'))
     return words
 
 def loadWordsFromDB(db):
@@ -133,20 +130,20 @@ if __name__ == '__main__' :
     print 'loading dataset'
     numNonWordsFeatures = 4
     mWords = loadWords()
-    articles = loadDataSet(10)
+    articles = loadDataSet(1)
+    articlesTest = loadDataSet(0)
     train = []
     print 'extracting features'
     featureextractor = FeatureExtractor()
     for article in articles:
         features = featureextractor.get_features(article)
         #Tom: mWords moet alle belangrijke woorden bevatten hier dan worden de andere woorden eruitgegooid
+		#Johan: Ik denk dat dat nu gebeurt
         #features.text = tokenize(features.text, tokenizer=RegexpTokenizer('[a-zA-Z]\w+'), stemmer=PorterStemmer())
         features.text = [x for x in features.text if x in mWords]
         features = (features, features.label)
         train.append(features)
-    l = int(len(train) * 0.8)
-    test = train[l:]
-    train = train[:l]
+
     wordId = 4
     print 'generating data cache'
     for word in mWords:
@@ -169,6 +166,7 @@ if __name__ == '__main__' :
             neg = sum(1 for a in articlesByPublisher if a.label == 'neg')
             publisherValue = (pos - neg) / float((pos + neg))
             publisherValues[publisher] = publisherValue
+	
     print '#features=', wordId
     print '#articles=', len(train)
     
